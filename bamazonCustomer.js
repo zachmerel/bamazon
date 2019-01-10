@@ -27,8 +27,8 @@ connection.connect(function (err) {
 function displayItems(){
   connection.query("SELECT id,product_name,price FROM products", function(err, res) {
     if (err) throw err;
-    console.log(res);
-    connection.end();
+    console.table(res);
+    // connection.end();
   });
 }
 function start() {
@@ -55,22 +55,24 @@ inquirer
       message: "How much of this itme would you like?"
     }
   ])
-  .then(function (answer) {
+  .then(function(answer) {
     // get the information of the chosen item
-    let chosenItem;
-    for (let i = 0; i < results.length; i++) {
-      if (results[i].item_name === answer.choice) {
+    var chosenItem;
+    for (var i = 0; i < results.length; i++) {
+      if (results[i].product_name === answer.choice) {
         chosenItem = results[i];
       }
+      
     }
     // determine if item is in stock
-    if (chosenItem.stock_quantity < parseInt(answer.productAmount)) {
-      // bid was high enough, so update db, let the user know, and start over
+    if (chosenItem.stock_quantity >= parseInt(answer.productAmount)) {
+      let newStockAmount = chosenItem.stock_quantity - answer.productAmount;
+      // replace the current amount with the new amount
       connection.query(
-        "UPDATE auctions SET ? WHERE ?",
+        "UPDATE products SET ? WHERE ?",
         [
           {
-            stock_quantity: answer.productAmount
+            stock_quantity: newStockAmount
           },
           {
             id: chosenItem.id
@@ -78,7 +80,8 @@ inquirer
         ],
         function (error) {
           if (error) throw err;
-          console.log("Item purchased");
+          let customerOrder = parseFloat(answer.productAmount * chosenItem.price);
+          console.log(`Item purchased, your total is ${customerOrder}`);
           start();
         }
       );
