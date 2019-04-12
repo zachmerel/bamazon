@@ -52,7 +52,7 @@ inquirer
     {
       name: "productAmount",
       type: "input",
-      message: "How much of this itme would you like?"
+      message: "How much of this item would you like?"
     }
   ])
   .then(function(answer) {
